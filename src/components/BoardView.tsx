@@ -52,10 +52,6 @@ const BoardView: React.FC = () => {
         return () => unsubscribe();
     }, [userId]);
 
-    // Categorizing tasks
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
     let filteredTasks = tasks;
 
     // Apply category filter
@@ -83,13 +79,9 @@ const BoardView: React.FC = () => {
         );
     }
 
-    const pendingTasks = filteredTasks.filter(task => new Date(task.dueDate) > today);
-    const completedTasks = filteredTasks.filter(task => new Date(task.dueDate) < today);
-    const inProgressTasks = filteredTasks.filter(task => {
-        const taskDate = new Date(task.dueDate);
-        taskDate.setHours(0, 0, 0, 0);
-        return taskDate.getTime() === today.getTime();
-    });
+    const pendingTasks = filteredTasks.filter(task => task.status === "TO-DO");
+    const inProgressTasks = filteredTasks.filter(task => task.status === "IN-PROGRESS");
+    const completedTasks = filteredTasks.filter(task => task.status === "COMPLETED");
 
     const handleEdit = (task: Task) => {
         setEditingTask(task);

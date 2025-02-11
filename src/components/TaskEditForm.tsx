@@ -12,6 +12,7 @@ const TaskEditForm: React.FC<{ task: Task; onUpdate: () => void; onCancel: () =>
     const [category, setCategory] = useState(task.category);
     const [dueDate, setDueDate] = useState(new Date(task.dueDate));
     const [tags, setTags] = useState(task.tags.join(', '));
+    const [status, setStatus] = useState(task.status);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -25,7 +26,8 @@ const TaskEditForm: React.FC<{ task: Task; onUpdate: () => void; onCancel: () =>
             title,
             category,
             dueDate: dueDate.toISOString(),
-            tags: tags.split(',').map(tag => tag.trim())
+            tags: tags.split(',').map(tag => tag.trim()),
+            status: status
         });
 
         onUpdate();
@@ -97,6 +99,20 @@ const TaskEditForm: React.FC<{ task: Task; onUpdate: () => void; onCancel: () =>
                         value={tags}
                         onChange={(e) => setTags(e.target.value)}
                     />
+                </div>
+
+                <div className="input-group">
+                    <select
+                        className="form-control"
+                        value={status}
+                        onChange={(e) => setStatus(e.target.value)}
+                        required
+                    >
+                        <option value="">Select Task Status</option>
+                        <option value="TO-DO">TO-DO</option>
+                        <option value="IN-PROGRESS">IN-PROGRESS</option>
+                        <option value="COMPLETED">COMPLETED</option>
+                    </select>
                 </div>
 
                 {/* Buttons in one line */}

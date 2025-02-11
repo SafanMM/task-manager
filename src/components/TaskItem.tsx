@@ -29,13 +29,16 @@ const TaskItem: React.FC<{ task: Task; onEdit: () => void }> = ({ task, onEdit }
         return `${day}-${month}-${year}`;
     };
 
+    // Filter out empty tag strings
+    const filteredTags = task.tags.filter(tag => tag.trim() !== '');
+
     return (
         <div className="task-item">
             <div>
                 <h3>Task: {task.title}</h3>
                 <p>Task Category: <strong>{task.category}</strong></p>
                 <p>Due on: {formatDueDate(task.dueDate)}</p>
-                {task.tags.length > 0 && <p>Tags: {task.tags.join(', ')}</p>}
+                {filteredTags.length > 0 && <p>Tags: {filteredTags.join(', ')}</p>}
             </div>
             <div>
                 <button onClick={onEdit} className="btn btn-light" style={{ marginRight: 5 }}>
@@ -50,3 +53,4 @@ const TaskItem: React.FC<{ task: Task; onEdit: () => void }> = ({ task, onEdit }
 };
 
 export default TaskItem;
+

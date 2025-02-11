@@ -4,7 +4,7 @@ export interface Task {
   title: string;
   category: string;
   dueDate: string;
-  completed: boolean;
   tags: string[];
+  status: string;
   order: number; // Add this line
 }

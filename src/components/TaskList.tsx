@@ -51,10 +51,6 @@ const TaskList: React.FC = () => {
         return () => unsubscribe();
     }, [userId]);
 
-    // Categorizing tasks
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
     let filteredTasks = tasks;
 
     // Apply category filter
@@ -76,19 +72,15 @@ const TaskList: React.FC = () => {
     // Apply search filter
     if (searchTerm.trim()) {
         filteredTasks = filteredTasks.filter(task =>
-            task.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-            task.dueDate.toLowerCase().includes(searchTerm.toLowerCase()) || 
+            task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            task.dueDate.toLowerCase().includes(searchTerm.toLowerCase()) ||
             task.category.toLowerCase().includes(searchTerm.toLowerCase())
         );
     }
 
-    const pendingTasks = filteredTasks.filter(task => new Date(task.dueDate) > today);
-    const completedTasks = filteredTasks.filter(task => new Date(task.dueDate) < today);
-    const inProgressTasks = filteredTasks.filter(task => {
-        const taskDate = new Date(task.dueDate);
-        taskDate.setHours(0, 0, 0, 0);
-        return taskDate.getTime() === today.getTime();
-    });
+    const pendingTasks = filteredTasks.filter(task => task.status === "TO-DO");
+    const inProgressTasks = filteredTasks.filter(task => task.status === "IN-PROGRESS");
+    const completedTasks = filteredTasks.filter(task => task.status === "COMPLETED");
 
     const handleEdit = (task: Task) => {
         setEditingTask(task);
@@ -172,7 +164,7 @@ const TaskList: React.FC = () => {
             </div>
 
             <DragDropContext onDragEnd={handleDragEnd}>
-                <div className="task-columns">
+                <div className="task-columns" style={{ marginBottom: 10 }}>
                     <StrictModeDroppable droppableId="todo">
                         {(provided) => (
                             <div className="task-column todo" ref={provided.innerRef} {...provided.droppableProps}>

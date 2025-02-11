@@ -11,6 +11,7 @@ const TaskForm: React.FC<{ onTaskAdded: () => void }> = ({ onTaskAdded }) => {
     const [category, setCategory] = useState('');
     const [dueDate, setDueDate] = useState<Date | null>(null);
     const [tags, setTags] = useState('');
+    const [status, setStatus] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -36,7 +37,7 @@ const TaskForm: React.FC<{ onTaskAdded: () => void }> = ({ onTaskAdded }) => {
                 category,
                 userId: auth.currentUser?.uid, // ✅ Store logged-in user's ID
                 dueDate: dueDate.toISOString(),
-                completed: false,
+                status: status,
                 tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag),
                 order: lastOrder + 1
             });
@@ -46,6 +47,7 @@ const TaskForm: React.FC<{ onTaskAdded: () => void }> = ({ onTaskAdded }) => {
             setCategory('');
             setDueDate(null);
             setTags('');
+            setStatus('');
             onTaskAdded();
             setIsModalOpen(false); // Close modal after adding task
         } catch (error) {
@@ -121,6 +123,20 @@ const TaskForm: React.FC<{ onTaskAdded: () => void }> = ({ onTaskAdded }) => {
                                 value={tags}
                                 onChange={(e) => setTags(e.target.value)}
                             />
+                        </div>
+
+                        <div className="input-group">
+                            <select
+                                className="form-control"
+                                value={status}
+                                onChange={(e) => setStatus(e.target.value)}
+                                required
+                            >
+                                <option value="">Select Task Status</option>
+                                <option value="TO-DO">TO-DO</option>
+                                <option value="IN-PROGRESS">IN-PROGRESS</option>
+                                <option value="COMPLETED">COMPLETED</option>
+                            </select>
                         </div>
 
                         <button type="submit" className="btn btn-success">
