@@ -44,4 +44,40 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 ### **1️⃣ Clone the Repository**
 ```sh
 git clone https://github.com/SafanMM/task-manager.git
-cd task-manager
+
+---
+
+### 🛠️ Available Scripts
+In the project directory, you can run:
+
+npm start
+- Runs the app in the development mode at http://localhost:3000.
+- The page reloads if you make edits, and you will see lint errors in the console.
+
+npm test
+- Launches the test runner in the interactive watch mode.
+
+npm run build
+- Builds the app for production in the build/ folder.
+- Optimized for the best performance.
+
+npm run eject
+- ⚠ Warning: This is a one-way operation. You cannot go back!
+- Ejecting removes the single build dependency and copies all configuration files.
+
+---
+
+🛠️ Tech Stack
+- Frontend: React, TypeScript
+- Backend: Firebase Firestore
+- Authentication: Firebase Auth (Google Sign-In)
+- State Management: React Context + React Query
+- Drag & Drop: react-beautiful-dnd
+- UI Styling: Tailwind CSS
+
+---
+
+### Contact
+📧 Email: safanmm05@gmail.com
+📞 Phone: +91 8748828049
+🔗 LinkedIn: https://in.linkedin.com/in/safan-m-m-21192a222
