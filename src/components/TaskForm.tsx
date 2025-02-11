@@ -55,81 +55,81 @@ const TaskForm: React.FC<{ onTaskAdded: () => void }> = ({ onTaskAdded }) => {
     };
 
     return (
-        <div className="task-form-container">
-            <div className="task-form-header">
-                <button className="btn btn-primary" onClick={() => setIsModalOpen(true)} style={{ borderRadius: 50 }}>
-                    Add Task
-                </button>
+        <>
+
+            <button className="btn btn-primary btn-logout-right" onClick={() => setIsModalOpen(true)} style={{ borderRadius: 50 }}>
+                Add Task
+            </button>
+            <div className="task-form-container">
+                <Modal
+                    isOpen={isModalOpen}
+                    onRequestClose={() => setIsModalOpen(false)}
+                    className="modal-content"
+                    overlayClassName="modal-overlay"
+                >
+                    <div className="modal-header">
+                        <h2>Create a New Task</h2>
+                        <button className="close-button" onClick={() => setIsModalOpen(false)}>
+                            <FaTimes />
+                        </button>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="task-form">
+                        <div className="input-group">
+                            <FaTasks className="input-icon" />
+                            <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Task Title"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        <div className="input-group">
+                            <select
+                                className="form-control"
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value)}
+                                required
+                            >
+                                <option value="">Select Category</option>
+                                <option value="Work">Work</option>
+                                <option value="Personal">Personal</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Fitness">Fitness</option>
+                            </select>
+                        </div>
+
+                        <div className="input-group">
+                            <FaCalendarAlt className="input-icon" />
+                            <input
+                                type="date"
+                                className="form-control"
+                                onChange={(e) => setDueDate(new Date(e.target.value))}
+                                required
+                            />
+                        </div>
+
+                        <div className="input-group">
+                            <FaTags className="input-icon" />
+                            <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Tags (comma separated)"
+                                value={tags}
+                                onChange={(e) => setTags(e.target.value)}
+                            />
+                        </div>
+
+                        <button type="submit" className="btn btn-success">
+                            <FaPlus /> Add Task
+                        </button>
+                    </form>
+                </Modal>
             </div>
-
-            <Modal
-                isOpen={isModalOpen}
-                onRequestClose={() => setIsModalOpen(false)}
-                className="modal-content"
-                overlayClassName="modal-overlay"
-            >
-                <div className="modal-header">
-                    <h2>Create a New Task</h2>
-                    <button className="close-button" onClick={() => setIsModalOpen(false)}>
-                        <FaTimes />
-                    </button>
-                </div>
-
-                <form onSubmit={handleSubmit} className="task-form">
-                    <div className="input-group">
-                        <FaTasks className="input-icon" />
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Task Title"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            required
-                        />
-                    </div>
-
-                    <div className="input-group">
-                        <select
-                            className="form-control"
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
-                            required
-                        >
-                            <option value="">Select Category</option>
-                            <option value="Work">Work</option>
-                            <option value="Personal">Personal</option>
-                            <option value="Shopping">Shopping</option>
-                            <option value="Fitness">Fitness</option>
-                        </select>
-                    </div>
-
-                    <div className="input-group">
-                        <FaCalendarAlt className="input-icon" />
-                        <input
-                            type="date"
-                            className="form-control"
-                            onChange={(e) => setDueDate(new Date(e.target.value))}
-                            required
-                        />
-                    </div>
-
-                    <div className="input-group">
-                        <FaTags className="input-icon" />
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Tags (comma separated)"
-                            value={tags}
-                            onChange={(e) => setTags(e.target.value)}
-                        />
-                    </div>
-
-                    <button type="submit" className="btn btn-success">
-                        <FaPlus /> Add Task
-                    </button>
-                </form>
-            </Modal>
-        </div>
+        </>
     );
 };
 

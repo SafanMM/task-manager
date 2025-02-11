@@ -36,7 +36,7 @@ const App: React.FC = () => {
                 <>
                     {/* Navbar */}
                     <div className="navbar">
-                        <h1>TaskBuddy</h1>
+                        <h1 className="app-title">TaskBuddy</h1>
                         <div className="user-info">
                             {user.photoURL ? (
                                 <img src={user.photoURL} alt="Profile" className="profile-pic" />
@@ -49,24 +49,26 @@ const App: React.FC = () => {
 
                     {/* List/Board Toggle */}
                     <div className="toggle-container">
-                        <button 
-                            className={`toggle-btn ${viewMode === 'list' ? 'active' : ''}`} 
+                        <button
+                            className={`toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
                             onClick={() => setViewMode('list')}
                         >
                             📄 List
                         </button>
-                        <button 
-                            className={`toggle-btn ${viewMode === 'board' ? 'active' : ''}`} 
+                        <button
+                            className={`toggle-btn ${viewMode === 'board' ? 'active' : ''}`}
                             onClick={() => setViewMode('board')}
                         >
                             🗂️ Board
                         </button>
-                        {/* Logout Button on the Right */}
-                        <button className="btn btn-danger btn-logout-right" onClick={handleLogout}>Logout</button>
+                        <TaskForm onTaskAdded={handleTaskAdded} />
+                        <button className="btn btn-danger logout-btn" onClick={handleLogout}>Logout</button>
                     </div>
 
-                    <TaskForm onTaskAdded={handleTaskAdded} />
-                    {viewMode === 'list' ? <TaskList /> : <BoardView />}
+                    {/* Task View (Responsive) */}
+                    <div className="task-view">
+                        {viewMode === 'list' ? <TaskList /> : <BoardView />}
+                    </div>
                 </>
             ) : (
                 <Login onLogin={() => setUser(auth.currentUser)} />

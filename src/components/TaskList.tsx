@@ -16,8 +16,12 @@ const TaskList: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
 
+    // Filters
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedDate, setSelectedDate] = useState('');
+
     useEffect(() => {
-        // Get the logged-in user's ID
         const unsubscribeAuth = auth.onAuthStateChanged(user => {
             if (user) {
                 setUserId(user.uid);
@@ -30,10 +34,8 @@ const TaskList: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        console.log(userId)
-        if (!userId) return; // Do not fetch if user is not logged in
+        if (!userId) return;
 
-        // Fetch tasks only for the logged-in user
         const taskQuery = query(collection(db, 'tasks'), where('userId', '==', userId));
 
         const unsubscribe = onSnapshot(taskQuery, (snapshot) => {
@@ -43,31 +45,50 @@ const TaskList: React.FC = () => {
                 order: doc.data().order || 0
             })) as Task[];
 
-            console.log(tasksData)
             setTasks(tasksData.sort((a, b) => a.order - b.order));
         });
 
         return () => unsubscribe();
-    }, [userId]); // Fetch tasks whenever userId changes
+    }, [userId]);
 
     // Categorizing tasks
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const pendingTasks = tasks.filter(task => {
+    let filteredTasks = tasks;
+
+    // Apply category filter
+    if (selectedCategory) {
+        filteredTasks = filteredTasks.filter(task => task.category === selectedCategory);
+    }
+
+    // Apply due date filter (Fix)
+    if (selectedDate) {
+        filteredTasks = filteredTasks.filter(task => {
+            const taskDate = new Date(task.dueDate);
+            taskDate.setHours(0, 0, 0, 0);
+            const selectedDateObj = new Date(selectedDate);
+            selectedDateObj.setHours(0, 0, 0, 0);
+            return taskDate.getTime() === selectedDateObj.getTime();
+        });
+    }
+
+    // Apply search filter
+    if (searchTerm.trim()) {
+        filteredTasks = filteredTasks.filter(task =>
+            task.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+            task.dueDate.toLowerCase().includes(searchTerm.toLowerCase()) || 
+            task.category.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }
+
+    const pendingTasks = filteredTasks.filter(task => new Date(task.dueDate) > today);
+    const completedTasks = filteredTasks.filter(task => new Date(task.dueDate) < today);
+    const inProgressTasks = filteredTasks.filter(task => {
         const taskDate = new Date(task.dueDate);
         taskDate.setHours(0, 0, 0, 0);
-        return taskDate > today; // Exclude today's tasks
+        return taskDate.getTime() === today.getTime();
     });
-
-    const completedTasks = tasks.filter(task => new Date(task.dueDate) < today);
-
-    const inProgressTasks = tasks.filter(task => {
-        const taskDate = new Date(task.dueDate);
-        taskDate.setHours(0, 0, 0, 0);
-        return taskDate.getTime() === today.getTime(); // Only today's tasks
-    });
-
 
     const handleEdit = (task: Task) => {
         setEditingTask(task);
@@ -96,6 +117,12 @@ const TaskList: React.FC = () => {
         await batch.commit();
     };
 
+    const handleClearFilters = () => {
+        setSearchTerm('');
+        setSelectedCategory('');
+        setSelectedDate('');
+    };
+
     return (
         <div className="task-board">
             {/* Task Edit Modal */}
@@ -110,9 +137,42 @@ const TaskList: React.FC = () => {
                 )}
             </Modal>
 
+            {/* Filters Section */}
+            <div className="filter-container">
+                <input
+                    type="text"
+                    placeholder="🔍 Search tasks..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="filter-input"
+                />
+
+                <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="filter-select"
+                >
+                    <option value="">📂 All Categories</option>
+                    <option value="Work">👨‍💼 Work</option>
+                    <option value="Personal">🏠 Personal</option>
+                    <option value="Shopping">🛍️ Shopping</option>
+                    <option value="Fitness">💪 Fitness</option>
+                </select>
+
+                <input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="filter-input"
+                />
+
+                <button onClick={handleClearFilters} className="btn-clear">
+                    Clear Filters
+                </button>
+            </div>
+
             <DragDropContext onDragEnd={handleDragEnd}>
-                <div className="task-columns" style={{ paddingBottom: 10 }}>
-                    {/* To-Do Column */}
+                <div className="task-columns">
                     <StrictModeDroppable droppableId="todo">
                         {(provided) => (
                             <div className="task-column todo" ref={provided.innerRef} {...provided.droppableProps}>

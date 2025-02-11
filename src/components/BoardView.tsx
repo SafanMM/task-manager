@@ -16,6 +16,11 @@ const BoardView: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
 
+    // Filters
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedDate, setSelectedDate] = useState('');
+
     useEffect(() => {
         // Get logged-in user ID
         const unsubscribeAuth = auth.onAuthStateChanged(user => {
@@ -51,20 +56,40 @@ const BoardView: React.FC = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const pendingTasks = tasks.filter(task => {
+    let filteredTasks = tasks;
+
+    // Apply category filter
+    if (selectedCategory) {
+        filteredTasks = filteredTasks.filter(task => task.category === selectedCategory);
+    }
+
+    // Apply due date filter (Fix)
+    if (selectedDate) {
+        filteredTasks = filteredTasks.filter(task => {
+            const taskDate = new Date(task.dueDate);
+            taskDate.setHours(0, 0, 0, 0);
+            const selectedDateObj = new Date(selectedDate);
+            selectedDateObj.setHours(0, 0, 0, 0);
+            return taskDate.getTime() === selectedDateObj.getTime();
+        });
+    }
+
+    // Apply search filter
+    if (searchTerm.trim()) {
+        filteredTasks = filteredTasks.filter(task =>
+            task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            task.dueDate.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            task.category.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }
+
+    const pendingTasks = filteredTasks.filter(task => new Date(task.dueDate) > today);
+    const completedTasks = filteredTasks.filter(task => new Date(task.dueDate) < today);
+    const inProgressTasks = filteredTasks.filter(task => {
         const taskDate = new Date(task.dueDate);
         taskDate.setHours(0, 0, 0, 0);
-        return taskDate > today; // Exclude today's tasks
+        return taskDate.getTime() === today.getTime();
     });
-
-    const completedTasks = tasks.filter(task => new Date(task.dueDate) < today);
-
-    const inProgressTasks = tasks.filter(task => {
-        const taskDate = new Date(task.dueDate);
-        taskDate.setHours(0, 0, 0, 0);
-        return taskDate.getTime() === today.getTime(); // Only today's tasks
-    });
-
 
     const handleEdit = (task: Task) => {
         setEditingTask(task);
@@ -93,79 +118,119 @@ const BoardView: React.FC = () => {
         await batch.commit();
     };
 
+    const handleClearFilters = () => {
+        setSearchTerm('');
+        setSelectedCategory('');
+        setSelectedDate('');
+    };
+
     return (
-        <div className="board-container">
-            {/* Task Edit Modal */}
-            <Modal
-                isOpen={isModalOpen}
-                onRequestClose={handleEditComplete}
-                className="modal-content"
-                overlayClassName="modal-overlay"
-            >
-                {editingTask && (
-                    <TaskEditForm task={editingTask} onUpdate={handleEditComplete} onCancel={handleEditComplete} />
-                )}
-            </Modal>
+        <>
+            <div className="filter-container" style={{ paddingLeft: 30, paddingRight: 30 }}>
+                <input
+                    type="text"
+                    placeholder="🔍 Search tasks..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="filter-input"
+                />
 
-            <DragDropContext onDragEnd={handleDragEnd}>
-                {/* To-Do Column */}
-                <StrictModeDroppable droppableId="todo">
-                    {(provided) => (
-                        <div className="board-column todo" ref={provided.innerRef} {...provided.droppableProps}>
-                            <h2>To-Do ({pendingTasks.length})</h2>
-                            {pendingTasks.map((task, index) => (
-                                <Draggable key={task.id} draggableId={task.id} index={index}>
-                                    {(provided) => (
-                                        <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-                                            <TaskItem task={task} onEdit={() => handleEdit(task)} />
-                                        </div>
-                                    )}
-                                </Draggable>
-                            ))}
-                            {provided.placeholder}
-                        </div>
-                    )}
-                </StrictModeDroppable>
+                <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="filter-select"
+                >
+                    <option value="">📂 All Categories</option>
+                    <option value="Work">👨‍💼 Work</option>
+                    <option value="Personal">🏠 Personal</option>
+                    <option value="Shopping">🛍️ Shopping</option>
+                    <option value="Fitness">💪 Fitness</option>
+                </select>
 
-                {/* In Progress Column */}
-                <StrictModeDroppable droppableId="inprogress">
-                    {(provided) => (
-                        <div className="board-column in-progress" ref={provided.innerRef} {...provided.droppableProps}>
-                            <h2>In Progress ({inProgressTasks.length})</h2>
-                            {inProgressTasks.map((task, index) => (
-                                <Draggable key={task.id} draggableId={task.id} index={index}>
-                                    {(provided) => (
-                                        <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-                                            <TaskItem task={task} onEdit={() => handleEdit(task)} />
-                                        </div>
-                                    )}
-                                </Draggable>
-                            ))}
-                            {provided.placeholder}
-                        </div>
-                    )}
-                </StrictModeDroppable>
+                <input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="filter-input"
+                />
 
-                {/* Completed Column */}
-                <StrictModeDroppable droppableId="completed">
-                    {(provided) => (
-                        <div className="board-column completed" ref={provided.innerRef} {...provided.droppableProps}>
-                            <h2>Completed ({completedTasks.length})</h2>
-                            {completedTasks.map((task, index) => (
-                                <Draggable key={task.id} draggableId={task.id} index={index}>
-                                    {(provided) => (
-                                        <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-                                            <TaskItem task={task} onEdit={() => handleEdit(task)} />
-                                        </div>
-                                    )}
-                                </Draggable>
-                            ))}
-                            {provided.placeholder}
-                        </div>
+                <button onClick={handleClearFilters} className="btn-clear">
+                    Clear Filters
+                </button>
+            </div>
+            <div className="board-container" style={{padding: "0px 20px 20px 20px"}}>
+                {/* Task Edit Modal */}
+                <Modal
+                    isOpen={isModalOpen}
+                    onRequestClose={handleEditComplete}
+                    className="modal-content"
+                    overlayClassName="modal-overlay"
+                >
+                    {editingTask && (
+                        <TaskEditForm task={editingTask} onUpdate={handleEditComplete} onCancel={handleEditComplete} />
                     )}
-                </StrictModeDroppable>
-            </DragDropContext>
-        </div>
+                </Modal>
+
+                <DragDropContext onDragEnd={handleDragEnd}>
+                    {/* To-Do Column */}
+                    <StrictModeDroppable droppableId="todo">
+                        {(provided) => (
+                            <div className="board-column todo" ref={provided.innerRef} {...provided.droppableProps}>
+                                <h2>To-Do ({pendingTasks.length})</h2>
+                                {pendingTasks.map((task, index) => (
+                                    <Draggable key={task.id} draggableId={task.id} index={index}>
+                                        {(provided) => (
+                                            <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                                                <TaskItem task={task} onEdit={() => handleEdit(task)} />
+                                            </div>
+                                        )}
+                                    </Draggable>
+                                ))}
+                                {provided.placeholder}
+                            </div>
+                        )}
+                    </StrictModeDroppable>
+
+                    {/* In Progress Column */}
+                    <StrictModeDroppable droppableId="inprogress">
+                        {(provided) => (
+                            <div className="board-column in-progress" ref={provided.innerRef} {...provided.droppableProps}>
+                                <h2>In Progress ({inProgressTasks.length})</h2>
+                                {inProgressTasks.map((task, index) => (
+                                    <Draggable key={task.id} draggableId={task.id} index={index}>
+                                        {(provided) => (
+                                            <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                                                <TaskItem task={task} onEdit={() => handleEdit(task)} />
+                                            </div>
+                                        )}
+                                    </Draggable>
+                                ))}
+                                {provided.placeholder}
+                            </div>
+                        )}
+                    </StrictModeDroppable>
+
+                    {/* Completed Column */}
+                    <StrictModeDroppable droppableId="completed">
+                        {(provided) => (
+                            <div className="board-column completed" ref={provided.innerRef} {...provided.droppableProps}>
+                                <h2>Completed ({completedTasks.length})</h2>
+                                {completedTasks.map((task, index) => (
+                                    <Draggable key={task.id} draggableId={task.id} index={index}>
+                                        {(provided) => (
+                                            <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                                                <TaskItem task={task} onEdit={() => handleEdit(task)} />
+                                            </div>
+                                        )}
+                                    </Draggable>
+                                ))}
+                                {provided.placeholder}
+                            </div>
+                        )}
+                    </StrictModeDroppable>
+                </DragDropContext>
+            </div>
+        </>
     );
 };
 
